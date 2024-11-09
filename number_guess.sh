@@ -20,6 +20,7 @@ else
   done
 fi
 
+
 GUESS_NUMBER() {
   if [[ -z $GUESS ]]
   then
@@ -35,13 +36,22 @@ GUESS_NUMBER() {
     echo Guess the secret number between 1 to 1000:
   fi
     read USER_GUESS
+    if [[ ! $USER_GUESS =~ ^[0-9]+$ ]]
+    then
+     GUESS_NUMBER "That is not an integer, guess again:"
+    fi
     if [[ $USER_GUESS -eq $RANDOM_NUMBER ]]
     then
       echo You guessed it in $GUESS tries. The secret number was $RANDOM_NUMBER!. Nice job!
-      UPDATE_GAMES_PLAYED=$($PSQL "UPDATE users SET games_played = games_played + 1 WHERE username = '$USERNAME'")
-      if [[ $GUESS -lt $BEST_GAME ]]
+      if [[ -z $BEST_GAME ]]
       then
-      UPDATE_BEST_GAME=$($PSQL "UPDATE users SET best_game = $GUESS WHERE username = '$USERNAME';")
+        INSERT_FIRST_GAME=$($PSQL "UPDATE users SET games_played = 1, best_game = $GUESS WHERE username = '$USERNAME'")
+      else
+        UPDATE_GAMES_PLAYED=$($PSQL "UPDATE users SET games_played = games_played + 1 WHERE username = '$USERNAME'")
+        if [[ $GUESS -lt $BEST_GAME ]]
+        then
+        UPDATE_BEST_GAME=$($PSQL "UPDATE users SET best_game = $GUESS WHERE username = '$USERNAME';")
+        fi
       fi
     elif [[ $USER_GUESS -gt $RANDOM_NUMBER ]]
     then
