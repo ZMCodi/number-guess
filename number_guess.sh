@@ -19,3 +19,32 @@ else
     echo "Welcome back, $USERNAME! You have played $GAMES_PLAYED games, and your best game took $BEST_GAME guesses."
   done
 fi
+
+GUESS_NUMBER() {
+  if [[ -z $GUESS ]]
+  then
+    GUESS=1
+  fi
+
+  if [[ $1 ]]
+  then
+    echo $1
+  else
+    echo Guess the secret number between 1 to 1000:
+  fi
+    read USER_GUESS
+    if [[ $USER_GUESS -eq $RANDOM_NUMBER ]]
+    then
+      echo You guessed it in $GUESS tries. The secret number was $RANDOM_NUMBER!. Nice job!
+    elif [[ $USER_GUESS -gt $RANDOM_NUMBER ]]
+    then
+      ((GUESS++))
+      GUESS_NUMBER "It's lower than that, guess again:"
+    elif [[ $USER_GUESS -lt $RANDOM_NUMBER ]]
+    then
+      ((GUESS++))
+      GUESS_NUMBER "It's higher than that, guess again:"
+    fi
+}
+
+GUESS_NUMBER
