@@ -26,6 +26,8 @@ GUESS_NUMBER() {
     GUESS=1
   fi
 
+  BEST_GAME=$($PSQL "SELECT best_game FROM users WHERE username = '$USERNAME'")
+
   if [[ $1 ]]
   then
     echo $1
@@ -36,6 +38,11 @@ GUESS_NUMBER() {
     if [[ $USER_GUESS -eq $RANDOM_NUMBER ]]
     then
       echo You guessed it in $GUESS tries. The secret number was $RANDOM_NUMBER!. Nice job!
+      UPDATE_GAMES_PLAYED=$($PSQL "UPDATE users SET games_played = games_played + 1 WHERE username = '$USERNAME'")
+      if [[ $GUESS -lt $BEST_GAME ]]
+      then
+      UPDATE_BEST_GAME=$($PSQL "UPDATE users SET best_game = $GUESS WHERE username = '$USERNAME';")
+      fi
     elif [[ $USER_GUESS -gt $RANDOM_NUMBER ]]
     then
       ((GUESS++))
