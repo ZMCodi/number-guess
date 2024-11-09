@@ -11,13 +11,12 @@ GET_USERNAME_RESULT=$($PSQL "SELECT * FROM users WHERE username = '$USERNAME'")
 if [[ -z $GET_USERNAME_RESULT ]]
 then
   ADD_USER=$($PSQL "INSERT INTO users (username) VALUES ('$USERNAME');")
-  echo Welcome, $USERNAME! It looks like this is your first time here.
+  echo Welcome, $( echo $USERNAME | sed -r 's/^ *| *$//g')! It looks like this is your first time here.
 else
-  GET_STATS=$($PSQL "SELECT games_played, best_game FROM users WHERE username = '$USERNAME';")
-  echo "$GET_STATS" | while IFS="|" read GAMES_PLAYED BEST_GAME
-  do
-    echo "Welcome back, $USERNAME! You have played $GAMES_PLAYED games, and your best game took $BEST_GAME guesses."
-  done
+  GAMES_PLAYED=$($PSQL "SELECT games_played FROM users WHERE username = '$USERNAME';")
+  BEST_GAME=$($PSQL "SELECT best_game FROM users WHERE username = '$USERNAME';")
+  echo "Welcome back, $( echo $USERNAME | sed -r 's/^ *| *$//g')! You have played $GAMES_PLAYED games, and your best game took $BEST_GAME guesses."
+
 fi
 
 
@@ -33,16 +32,17 @@ GUESS_NUMBER() {
   then
     echo $1
   else
-    echo Guess the secret number between 1 to 1000:
+    echo Guess the secret number between 1 and 1000:
   fi
     read USER_GUESS
     if [[ ! $USER_GUESS =~ ^[0-9]+$ ]]
     then
      GUESS_NUMBER "That is not an integer, guess again:"
+     return
     fi
     if [[ $USER_GUESS -eq $RANDOM_NUMBER ]]
     then
-      echo You guessed it in $GUESS tries. The secret number was $RANDOM_NUMBER!. Nice job!
+      echo You guessed it in $GUESS tries. The secret number was $RANDOM_NUMBER! Nice job!
       if [[ -z $BEST_GAME ]]
       then
         INSERT_FIRST_GAME=$($PSQL "UPDATE users SET games_played = 1, best_game = $GUESS WHERE username = '$USERNAME'")
